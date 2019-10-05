@@ -74,6 +74,7 @@ int insertReadyQueue(TCB_t *thread) //Changed func
 
 void runThread(TCB_t *thread) //Not changed
 {
+    startTimer();
     thread->state = PROCST_EXEC;
     AppendFila2(runningQueue, thread);
     setcontext(&(thread->context));
