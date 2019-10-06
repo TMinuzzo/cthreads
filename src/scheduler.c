@@ -6,7 +6,6 @@
 #include "../include/cdata.h"
 #include "../include/thread.h"
 
-
 // Filas respectivas a cada um dos estado (Executando, Bloqueado, Terminado, Apto)
 FILA2 *runningQueue, *blockedQueue, *finishedQueue, *readyQueue;
 
@@ -16,7 +15,7 @@ FILA2 *joinQueue;
 TCB_t *mainThreadTCB;
 ucontext_t mainThreadContext;
 
-FILA2 *initQueue()
+FILA2 *initQueue() //Inicializa uma fila
 {
     PFILA2 queue = (PFILA2)malloc(sizeof(FILA2));
     CreateFila2(queue);
@@ -24,35 +23,33 @@ FILA2 *initQueue()
     return queue;
 }
 
-int insertOrderedFila2(PFILA2 pFila, TCB_t *content) //New func
+int insertOrderedFila2(PFILA2 pFila, TCB_t *content) //Insere elementos de forma ordenada na fila (usado para a fila de Aptos)
 {
     if (pFila == NULL)
         return -1;
 
     TCB_t *thread = (TCB_t *)malloc(sizeof(TCB_t));
 
-    FirstFila2(pFila);
+    FirstFila2(pFila); //Volta a fila para o primeiro elemento
 
-    if (GetAtIteratorFila2(pFila) != NULL) //Volta a fila para o primeiro elemento
+    if (GetAtIteratorFila2(pFila) != NULL) //Verifica se a fila não está vazia
     {
         do //Ordena a fila da prioridade de menor valor para a de maior
         {
             thread = (TCB_t *)GetAtIteratorFila2(pFila);
             if (thread == NULL)
                 return AppendFila2(pFila, (void *)content);
-            if ((unsigned)content->prio < (unsigned)thread->prio)
+            if ((unsigned)content->prio < (unsigned)thread->prio) //Verifica a ordem de acordo com a prioridade
                 return InsertBeforeIteratorFila2(pFila, (void *)content);
         } while (NextFila2(pFila) == 0);
 
-        return AppendFila2(pFila, (void *)content);
+        return AppendFila2(pFila, (void *)content); // Caso a prioridade seja maior que a de todos os elementos da fila
     }
-    else
-        return AppendFila2(pFila, (void *)content);
 
-    return -1;
+    return AppendFila2(pFila, (void *)content); //Se a fila estiver vazia, insire um elemento nela
 }
 
-TCB_t *getAndRemoveFirstThread(PFILA2 pFila) //New func
+TCB_t *getAndRemoveFirstThread(PFILA2 pFila) //Remove e retorna o primeiro elemento da fila (faz um "pop" na fila)
 {
     TCB_t *thread = (TCB_t *)malloc(sizeof(TCB_t));
     if (FirstFila2(pFila) == 0)
@@ -63,17 +60,7 @@ TCB_t *getAndRemoveFirstThread(PFILA2 pFila) //New func
     return thread;
 }
 
-/*PRIO_QUEUE_t *initPriorityQueue()
-{
-    PRIO_QUEUE_t *queue = malloc(sizeof(PRIO_QUEUE_t));
-    queue->high = initQueue();
-    queue->medium = initQueue();
-    queue->low = initQueue();
-
-    return queue;
-}*/
-
-void initSchedulerQueues() //Changed func
+void initSchedulerQueues() //Inicializa todas as filas
 {
     // State Queues
     readyQueue = initQueue();
@@ -85,7 +72,7 @@ void initSchedulerQueues() //Changed func
     joinQueue = initQueue();
 }
 
-int initMainThread() //Changed func
+int initMainThread() //Cria um contexto para a função Main e adiciona ela na fila de execução
 {
     mainThreadTCB = (TCB_t *)malloc(sizeof(TCB_t));
 
@@ -93,10 +80,10 @@ int initMainThread() //Changed func
 
     getcontext(&mainThreadContext);
     mainThreadTCB = createThread(mainThreadContext, 0);
-    
 
     if (mainThreadTCB != NULL)
     {
+        startTimer(); //Inicia o contador no momento que o contexto é criado para a main
         mainThreadTCB->state = PROCST_EXEC;
         AppendFila2(runningQueue, mainThreadTCB);
         return 0;
@@ -105,14 +92,13 @@ int initMainThread() //Changed func
         return -1;
 }
 
-int insertReadyQueue(TCB_t *thread) //Changed func
+int insertReadyQueue(TCB_t *thread) //Insere uma thread na fila de aptos
 {
     thread->state = PROCST_APTO;
-
     return insertOrderedFila2(readyQueue, thread);
 }
 
-void runThread(TCB_t *thread) //Changed: startTimer()
+void runThread(TCB_t *thread) //Executa uam thread e inicia o contador de tempo da sua execução
 {
     startTimer();
     thread->state = PROCST_EXEC;
@@ -120,42 +106,15 @@ void runThread(TCB_t *thread) //Changed: startTimer()
     setcontext(&(thread->context));
 }
 
-TCB_t *getRunningThread() //Changed func
+TCB_t *getRunningThread() //Retorna o TCB da thread que está em execução
 {
-    TCB_t *thread = (TCB_t *)malloc(sizeof(TCB_t));
     if (FirstFila2(runningQueue) != 0)
         return NULL;
 
     return GetAtIteratorFila2(runningQueue);
 }
 
-/*TCB_t *popPriorityThread(PRIO_QUEUE_t *queue) //Not used anymore
-{
-    TCB_t *thread = malloc(sizeof(TCB_t));
-
-    // Verifica se existe alguma thread de prioridade alta
-    if (FirstFila2(queue->high) == 0)
-    {
-        thread = GetAtIteratorFila2(queue->high);
-        DeleteAtIteratorFila2(queue->high);
-    }
-    else if (FirstFila2(queue->medium) == 0)
-    {
-        thread = GetAtIteratorFila2(queue->medium);
-        DeleteAtIteratorFila2(queue->medium);
-    }
-    else if (FirstFila2(queue->low) == 0)
-    {
-        thread = GetAtIteratorFila2(queue->low);
-        DeleteAtIteratorFila2(queue->low);
-    }
-    else
-        return NULL;
-
-    return thread;
-}*/
-
-int scheduleNewThread() //Changed func
+int scheduleNewThread() //Retira a primeira thread da fila de aptos e a inicia
 {
     TCB_t *thread = (TCB_t *)malloc(sizeof(TCB_t));
     thread = getAndRemoveFirstThread(readyQueue);
@@ -167,17 +126,15 @@ int scheduleNewThread() //Changed func
     return 0;
 }
 
-int blockThread() //Changed: add stopTimer()
+int blockThread() //Interrompe a thread atual e salva o seu tempo de execução no campo "prio"
 {
     // Identifica a thread que está em execução
-    TCB_t *thread = getRunningThread();
+    TCB_t *thread = getAndRemoveFirstThread(runningQueue);
     int hasBeenBlocked = 0;
 
     if (thread == NULL)
         return -1;
 
-    FirstFila2(runningQueue);
-    DeleteAtIteratorFila2(runningQueue);
     // Salva o contexto de execução da thread
     getcontext(&(thread->context));
 
@@ -186,41 +143,37 @@ int blockThread() //Changed: add stopTimer()
         hasBeenBlocked = 1;
         thread->state = PROCST_BLOQ;
         thread->prio = (int)stopTimer();
-        AppendFila2(blockedQueue, thread);
-        scheduleNewThread();
+        AppendFila2(blockedQueue, thread); //Adiciona a fila de bloqueados
+        scheduleNewThread();               //Chama o escalonador para executar outra thread
     }
 
     return 0;
 }
 
-int yield() //Changed: add stopTimer()
+int yield() //Interrupção voluntária da thread atual, é salvo o seu tempo de execução no campo "prio"
 {
     // Identifica a thread que está em execução
-    TCB_t *thread = getRunningThread();
+    TCB_t *thread = getAndRemoveFirstThread(runningQueue);
     int hasYielded = 0;
 
     if (thread == NULL)
         return -1;
 
-    FirstFila2(runningQueue);
-    DeleteAtIteratorFila2(runningQueue);
     // Salva o contexto de execução da thread
     getcontext(&(thread->context));
 
     if (hasYielded == 0)
     {
         hasYielded = 1;
-        thread->state = PROCST_APTO;
         thread->prio = (int)stopTimer();
-        insertReadyQueue(thread);
-        // Chama o escalonador para executar outra thread
-        scheduleNewThread();
+        insertReadyQueue(thread); //Adiciona a fila de Aptos (liberação voluntária)
+        scheduleNewThread();      //Chama o escalonador para executar outra thread
     }
 
     return 0;
 }
 
-int unlockThread(int tid) //Not changed
+int unlockThread(int tid) //Uma thread bloqueada volta para a fila de Aptos
 {
     // Percorre a fila de threads bloqueadas
     TCB_t *thread = (TCB_t *)malloc(sizeof(TCB_t));
@@ -232,9 +185,8 @@ int unlockThread(int tid) //Not changed
             break;
         if (thread->tid == tid)
         {
-            // Se encontrar a thread, transfera da fila bloqueados para a fila aptos
+            // Se encontrar a thread, transfere da fila bloqueados para a fila aptos
             DeleteAtIteratorFila2(blockedQueue);
-            thread->state = PROCST_APTO;
             insertReadyQueue(thread);
             return 0;
         }
@@ -243,7 +195,7 @@ int unlockThread(int tid) //Not changed
     return -1;
 }
 
-void killThread()
+void killThread() //Remove a thread atual e, caso haja alguma thread aguardando ela, essa thread volta para a fila de aptos
 {
     // Identifica a thread que está em execução
     TCB_t *thread = getRunningThread();
@@ -275,18 +227,7 @@ void killThread()
     scheduleNewThread();
 }
 
-/*int setRunningThreadPriority(int prio)
-{
-    TCB_t *thread = getRunningThread();
-
-    if (thread == NULL)
-        return -1;
-
-    thread->prio = prio;
-    return 0;
-}*/
-
-TCB_t *findReadyThreadByTID(int tid) //changed func
+TCB_t *findReadyThreadByTID(int tid) //Busca uma thread através da sua ID
 {
     // Percorre a fila de aptos
     TCB_t *thread = (TCB_t *)malloc(sizeof(TCB_t));
@@ -297,14 +238,14 @@ TCB_t *findReadyThreadByTID(int tid) //changed func
         if (thread == NULL)
             break;
         if (thread->tid == tid)
-            return thread;  // Se encontrar a thread, retorna um ponteiro para o seu TCB
+            return thread; // Se encontrar a thread, retorna um ponteiro para o seu TCB
     } while (NextFila2(readyQueue) == 0);
 
     // Se não encontrar a thread, retorna NULL
     return NULL;
 }
 
-int waitForThread(int tid)
+int waitForThread(int tid) //Coloca a thread atual na fila de bloqueados até que a thread filha seja encerrada
 {
     // Thread em execução
     TCB_t *thread = getRunningThread();
@@ -338,4 +279,3 @@ int waitForThread(int tid)
     blockThread();
     return 0;
 }
-
