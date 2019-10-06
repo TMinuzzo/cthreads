@@ -1,8 +1,12 @@
-#ifndef __SCHEDULER__
-#define __SCHEDULER__
+#ifndef __SCHEDULER_H__
+#define __SCHEDULER_H__
 
-#include "ucontext.h"
+#include <stdlib.h>
+#include <ucontext.h>
 #include "support.h"
+#include "cthread.h"
+#include "cdata.h"
+#include "thread.h"
 
 int insertOrderedFila2(PFILA2 pFila, TCB_t *content);
 
@@ -17,8 +21,6 @@ int initMainThread();
 int insertReadyQueue(TCB_t *thread);
 
 void runThread(TCB_t *thread);
-
-TCB_t *getRunningThread();
 
 int scheduleNewThread();
 

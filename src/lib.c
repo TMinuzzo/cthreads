@@ -39,9 +39,7 @@ int ccreate(void *(*start)(void *), void *arg, int prio)
 
 	makecontext(&newContext, (void (*)(void))start, 1, arg);
 
-
-	TCB_t *newThread = malloc(sizeof(TCB_t));
-	newThread = createThread(newContext, prio);
+	TCB_t *newThread = createThread(newContext, prio);
 
 	int status = insertReadyQueue(newThread);
 	if(status < 0)
@@ -74,21 +72,9 @@ int cyield(void)
 int cjoin(int tid)
 {
 	initializeScheduler();
-	debugLog("\nJoin(): esperando thread  com id: %d\n", tid);
+	//debugLog("\nJoin(): esperando thread  com id: %d\n", tid);
 	
-	TCB_t* thread = getRunningThread();
-
-	if(thread == NULL) return -1;
-
-	// Necessário também adicionar uma verificação para caso a thread cujo tid não exista!
-	// Verificar se a thread bloqueante está bloqueando outra thread no momento.
-
-	
-
-	// TODO: identify which thread is running (EXECUTANDO) and send it BLOQUEADO
-	// TODO: use the tid to identify which thread should wait to finish execution
-	// should return when identified that the thread finished
-	return -9;
+	return waitForThread(tid);
 }
 
 /* Initialize the csem_t structure, that represents a semaphore
@@ -104,9 +90,14 @@ int cjoin(int tid)
 int csem_init(csem_t *sem, int count)
 {
 	initializeScheduler();
-	// TODO: initialize csem_t before using it's value in cwait and csignal
-	// TODO: csem_t receives as a second parameter a queue with all the blocked threads
-	return -9;
+
+	if (sem == NULL)
+		return -1;
+
+	sem->count = count;
+	sem->fila = iniQueue();
+
+	return 0;
 }
 
 /* 
@@ -121,11 +112,24 @@ int csem_init(csem_t *sem, int count)
 int cwait(csem_t *sem)
 {
 	initializeScheduler();
-	// TODO: verify if the requested resource is free.
-	// 		 YES: assigns the resource to the running thread
-	//		 NO: blocks the running thread, and send it to a queue that waits for the resource (semaphore queue)
-	// TODO: decrement the csem_t count variable: (sem->count)--
-	return -9;
+
+	// Verifica se o semáforo existe e foi inicializado
+	if(sem == NULL || sem->fila == NULL)
+		return -1;
+
+	(sem->count)--;
+
+	if (sem->count < 0){
+		//Busca a thread em execução e verifica se ela exeste
+		TCB_t *thread = getRunningThread(); 
+		if (thread == NULL)
+			return -1;
+
+		// Adiciona a thread atual fila do semáforo
+		AppendFila2(sem->fila, (void *)(thread->tid));
+		return blockThread();
+	}
+	return 0;
 }
 
 /*
@@ -139,9 +143,22 @@ int cwait(csem_t *sem)
 int csignal(csem_t *sem)
 {
 	initializeScheduler();
-	// TODO:
-	// TODO: increment the csem_t count variable: (sem->count)++
-	return -9;
+
+	// Verifica se o semáforo existe e foi inicializado
+	if (sem == NULL || sem->fila == NULL)
+		return -1;
+
+	(sem->count)++;
+
+	if (sem->count < 1)
+	{
+		FirstFila2(sem->fila);
+		int tid = (int)GetAtIteratorFila2(sem->fila);
+		DeleteAtIteratorFila2(sem->fila);
+
+		return unlockThread(tid);
+	}
+	return 0;
 }
 
 /*
@@ -150,10 +167,9 @@ int csignal(csem_t *sem)
  * 	name: pointer to memory area wich contains the names and card ids
  * Return:
  *	 0: Success
- *	-1: Error  
 */
 int cidentify(char *name, int size)
 {
-	strncpy(name, "Gabriel Lando - 00291399\nLeonardo Lauryel - XXXXXXXX\nThayná Minuzzo - 00262525", size);
+	strncpy(name, "Gabriel Lando - 00291399\nLeonardo Lauryel - 00275616\nThayná Minuzzo - 00262525", size);
 	return 0;
 }

@@ -1,18 +1,12 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <ucontext.h>
-#include "../include/support.h"
-#include "../include/cthread.h"
-#include "../include/cdata.h"
-#include "../include/thread.h"
+#include "../include/scheduler.h"
 
-// Filas respectivas a cada um dos estado (Executando, Bloqueado, Terminado, Apto)
-FILA2 *runningQueue, *blockedQueue, *finishedQueue, *readyQueue;
+// Filas respectivas a cada um dos estado (Apto, Executando, Bloqueado, Terminado)
+PFILA2 readyQueue = NULL, runningQueue = NULL, blockedQueue = NULL, finishedQueue = NULL;
 
 // Fila para pares thread_pai/thread_filho para a operação JOIN
-FILA2 *joinQueue;
+PFILA2 joinQueue = NULL;
 
-TCB_t *mainThreadTCB;
+TCB_t *mainThreadTCB = NULL;
 ucontext_t mainThreadContext;
 
 int schedulerInitialized = 0;
@@ -30,7 +24,7 @@ int insertOrderedFila2(PFILA2 pFila, TCB_t *content) //Insere elementos de forma
     if (pFila == NULL)
         return -1;
 
-    TCB_t *thread = (TCB_t *)malloc(sizeof(TCB_t));
+    TCB_t *thread = NULL;
 
     FirstFila2(pFila); //Volta a fila para o primeiro elemento
 
@@ -53,7 +47,7 @@ int insertOrderedFila2(PFILA2 pFila, TCB_t *content) //Insere elementos de forma
 
 TCB_t *getAndRemoveFirstThread(PFILA2 pFila) //Remove e retorna o primeiro elemento da fila (faz um "pop" na fila)
 {
-    TCB_t *thread = (TCB_t *)malloc(sizeof(TCB_t));
+    TCB_t *thread = NULL;
     if (FirstFila2(pFila) == 0)
     {
         thread = (TCB_t *)GetAtIteratorFila2(pFila);
@@ -76,8 +70,6 @@ void initSchedulerQueues() //Inicializa todas as filas
 
 int initMainThread() //Cria um contexto para a função Main e adiciona ela na fila de execução
 {
-    mainThreadTCB = (TCB_t *)malloc(sizeof(TCB_t));
-
     initSchedulerQueues();
 
     getcontext(&mainThreadContext);
@@ -108,18 +100,9 @@ void runThread(TCB_t *thread) //Executa uam thread e inicia o contador de tempo 
     setcontext(&(thread->context));
 }
 
-TCB_t *getRunningThread() //Retorna o TCB da thread que está em execução
-{
-    if (FirstFila2(runningQueue) != 0)
-        return NULL;
-
-    return GetAtIteratorFila2(runningQueue);
-}
-
 int scheduleNewThread() //Retira a primeira thread da fila de aptos e a inicia
 {
-    TCB_t *thread = (TCB_t *)malloc(sizeof(TCB_t));
-    thread = getAndRemoveFirstThread(readyQueue);
+    TCB_t *thread = getAndRemoveFirstThread(readyQueue);
 
     if (thread == NULL)
         return -1;
@@ -178,7 +161,7 @@ int yield() //Interrupção voluntária da thread atual, é salvo o seu tempo de
 int unlockThread(int tid) //Uma thread bloqueada volta para a fila de Aptos
 {
     // Percorre a fila de threads bloqueadas
-    TCB_t *thread = (TCB_t *)malloc(sizeof(TCB_t));
+    TCB_t *thread = NULL;
     FirstFila2(blockedQueue);
     do
     {
@@ -199,19 +182,15 @@ int unlockThread(int tid) //Uma thread bloqueada volta para a fila de Aptos
 
 void killThread() //Remove a thread atual e, caso haja alguma thread aguardando ela, essa thread volta para a fila de aptos
 {
-    // Identifica a thread que está em execução
-    TCB_t *thread = getRunningThread();
-
     stopTimer();
+    // Identifica a thread que está em execução e remove ele da fila "executando"
+    TCB_t *thread = getAndRemoveFirstThread(runningQueue);
 
-    // Remove a thread da fila "executando"
-    FirstFila2(runningQueue);
-    DeleteAtIteratorFila2(runningQueue);
     // Atualiza o estado da thread
     thread->state = PROCST_TERMINO;
 
     // Verifica se existe alguma thread esperando pela thread finalizada
-    JOIN_PAIR_t *joinPair = (JOIN_PAIR_t *)malloc(sizeof(JOIN_PAIR_t));
+    JOIN_PAIR_t *joinPair = NULL;
     FirstFila2(joinQueue);
     do
     {
@@ -232,7 +211,7 @@ void killThread() //Remove a thread atual e, caso haja alguma thread aguardando 
 TCB_t *findReadyThreadByTID(int tid) //Busca uma thread através da sua ID
 {
     // Percorre a fila de aptos
-    TCB_t *thread = (TCB_t *)malloc(sizeof(TCB_t));
+    TCB_t *thread = NULL;
     FirstFila2(readyQueue);
     do
     {
@@ -249,19 +228,17 @@ TCB_t *findReadyThreadByTID(int tid) //Busca uma thread através da sua ID
 
 int waitForThread(int tid) //Coloca a thread atual na fila de bloqueados até que a thread filha seja encerrada
 {
-    // Thread em execução
-    TCB_t *thread = getRunningThread();
+    // Busca a thread em execução
+    if (FirstFila2(runningQueue) != 0)
+        return -1;
+    TCB_t *thread = (TCB_t *)GetAtIteratorFila2(runningQueue);
 
-    // Verifica se a thread a ser bloqueada existe
-    if (thread == NULL)
+    // Verifica se a thread a ser bloqueada existe e se a thread cujo tid existe
+    if (thread == NULL || findReadyThreadByTID(tid) == NULL)
         return -1;
 
-    // Verifica se a thread bloqueante existe
-    if (findReadyThreadByTID(tid) == NULL)
-        return -3;
-
     // Verifica se a thread bloqueante já bloqueia outra thread
-    JOIN_PAIR_t *joinPair = malloc(sizeof(JOIN_PAIR_t));
+    JOIN_PAIR_t *joinPair = (JOIN_PAIR_t *)malloc(sizeof(JOIN_PAIR_t));
     if (FirstFila2(joinQueue) == 0)
     {
         do
@@ -270,7 +247,7 @@ int waitForThread(int tid) //Coloca a thread atual na fila de bloqueados até qu
             if (joinPair == NULL)
                 break;
             if (joinPair->tid_running_thread == tid)
-                return -4;
+                return -1;
         } while (NextFila2(joinQueue) == 0);
     }
 

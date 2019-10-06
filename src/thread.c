@@ -1,11 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <ucontext.h>
-#include "../include/support.h"
-#include "../include/cthread.h"
-#include "../include/cdata.h"
 #include "../include/thread.h"
-#include "../include/scheduler.h"
 
 int tid = 1;
 
