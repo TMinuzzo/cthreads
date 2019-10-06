@@ -14,8 +14,6 @@
 	OBS: Todas as funções devem testar no começo se a chamada
 	vem da main() - vide Seção 4 da definição do trabalho
 */
-ucontext_t dispatcherContext;
-char dispatcherStack[SIGSTKSZ];
 
 /*
  * Creates a new thread
@@ -33,7 +31,7 @@ int ccreate(void *(*start)(void *), void *arg, int prio)
 	ucontext_t newContext;
 	getcontext(&newContext);
 
-	newContext.uc_link = &dispatcherContext;
+	newContext.uc_link = getDispatcherContext();
 	newContext.uc_stack.ss_sp = malloc(SIGSTKSZ);
 	newContext.uc_stack.ss_size = SIGSTKSZ;
 
@@ -58,7 +56,7 @@ int ccreate(void *(*start)(void *), void *arg, int prio)
 int cyield(void)
 {
 	initializeScheduler();
-
+	
 	return yield();
 }
 
@@ -73,7 +71,8 @@ int cjoin(int tid)
 {
 	initializeScheduler();
 	//debugLog("\nJoin(): esperando thread  com id: %d\n", tid);
-	
+	//TCB_t *thread = getRunningThread();
+	//swapcontext(&thread->context, &dispatcherContext);
 	return waitForThread(tid);
 }
 
@@ -120,7 +119,7 @@ int cwait(csem_t *sem)
 	(sem->count)--;
 
 	if (sem->count < 0){
-		//Busca a thread em execução e verifica se ela exeste
+		//Busca a thread em execução e verifica se ela existe
 		TCB_t *thread = getRunningThread(); 
 		if (thread == NULL)
 			return -1;
@@ -143,6 +142,7 @@ int cwait(csem_t *sem)
 int csignal(csem_t *sem)
 {
 	initializeScheduler();
+	
 
 	// Verifica se o semáforo existe e foi inicializado
 	if (sem == NULL || sem->fila == NULL)
