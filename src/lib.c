@@ -95,7 +95,7 @@ int csem_init(csem_t *sem, int count)
 		return -1;
 
 	sem->count = count;
-	sem->fila = iniQueue();
+	sem->fila = initQueue();
 
 	return 0;
 }
