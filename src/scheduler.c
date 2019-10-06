@@ -24,6 +24,41 @@ FILA2 *initQueue()
     return queue;
 }
 
+int insertOrderedFila2(PFILA2 pFila, TCB_t *content) //New func
+{
+    if (pFila == NULL)
+        return -1;
+
+    TCB_t *thread = (TCB_t *)malloc(sizeof(TCB_t));
+
+    if (FirstFila2(pFila) == 0) //Volta a fila para o primeiro elemento
+    {
+        do //Ordena a fila da prioridade de menor valor para a de maior
+        {
+            thread = (TCB_t *)GetAtIteratorFila2(pFila);
+            if (thread == NULL)
+                return AppendFila2(pFila, (void *)content);
+            if ((unsigned)content->prio < (unsigned)thread->prio)
+                return InsertBeforeIteratorFila2(pFila, (void *)content);
+        } while (NextFila2(pFila) == 0);
+
+        return AppendFila2(pFila, (void *)content);
+    }
+
+    return -1;
+}
+
+TCB_t *getAndRemoveFirstThread(PFILA2 pFila) //New func
+{
+    TCB_t *thread = (TCB_t *)malloc(sizeof(TCB_t));
+    if (FirstFila2(pFila) == 0)
+    {
+        thread = (TCB_t *)GetAtIteratorFila2(pFila);
+        DeleteAtIteratorFila2(pFila);
+    }
+    return thread;
+}
+
 /*PRIO_QUEUE_t *initPriorityQueue()
 {
     PRIO_QUEUE_t *queue = malloc(sizeof(PRIO_QUEUE_t));
@@ -72,7 +107,7 @@ int insertReadyQueue(TCB_t *thread) //Changed func
     return insertOrderedFila2(readyQueue, thread);
 }
 
-void runThread(TCB_t *thread) //Not changed
+void runThread(TCB_t *thread) //Changed: startTimer()
 {
     startTimer();
     thread->state = PROCST_EXEC;
@@ -299,37 +334,3 @@ int waitForThread(int tid)
     return 0;
 }
 
-int insertOrderedFila2(PFILA2 pFila, s_TCB *content) //New func
-{
-    if (pFila == NULL)
-        return -1;
-
-    TCB_t *thread = (TCB_t *)malloc(sizeof(TCB_t));
-
-    if (FirstFila2(pFila) == 0) //Volta a fila para o primeiro elemento
-    {
-        do //Ordena a fila da prioridade de menor valor para a de maior
-        {
-            thread = (TCB_t *)GetAtIteratorFila2(pFila);
-            if (thread == NULL)
-                return AppendFila2(pFila, (void *)content);
-            if ((unsigned)content->prio < (unsigned)thread->prio)
-                return InsertBeforeIteratorFila2(pFila, (void *)content);
-        } while (NextFila2(pFila) == 0);
-
-        return AppendFila2(pFila, (void *)content);
-    }
-
-    return -1;
-}
-
-s_TCB *getAndRemoveFirstThread(PFILA2 pFila) //New func
-{
-    s_TCB *thread = (TCB_t *)malloc(sizeof(TCB_t));
-    if (FirstFila2(pFila) == 0)
-    {
-        thread = (s_TCB *)GetAtIteratorFila2(pFila);
-        DeleteAtIteratorFila2(pFila);
-    }
-    return thread;
-}
