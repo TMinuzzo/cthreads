@@ -32,5 +32,10 @@ typedef struct s_TCB { //thread control block
 	
 } TCB_t; 
 
+// Join parent-child pair
+typedef struct s_JOIN_PAIR {
+    int tid_blocked_thread;
+    int tid_running_thread;
+} JOIN_PAIR_t;
 
 #endif

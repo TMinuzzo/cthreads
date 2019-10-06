@@ -93,6 +93,7 @@ int initMainThread() //Changed func
 
     getcontext(&mainThreadContext);
     mainThreadTCB = createThread(mainThreadContext, 0);
+    
 
     if (mainThreadTCB != NULL)
     {
