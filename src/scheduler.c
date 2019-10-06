@@ -31,7 +31,9 @@ int insertOrderedFila2(PFILA2 pFila, TCB_t *content) //New func
 
     TCB_t *thread = (TCB_t *)malloc(sizeof(TCB_t));
 
-    if (FirstFila2(pFila) == 0) //Volta a fila para o primeiro elemento
+    FirstFila2(pFila);
+
+    if (GetAtIteratorFila2(pFila) != NULL) //Volta a fila para o primeiro elemento
     {
         do //Ordena a fila da prioridade de menor valor para a de maior
         {
@@ -44,6 +46,8 @@ int insertOrderedFila2(PFILA2 pFila, TCB_t *content) //New func
 
         return AppendFila2(pFila, (void *)content);
     }
+    else
+        return AppendFila2(pFila, (void *)content);
 
     return -1;
 }
