@@ -4,6 +4,10 @@
 #include "ucontext.h"
 #include "support.h"
 
+int insertOrderedFila2(PFILA2 pFila, TCB_t *content);
+
+TCB_t *getAndRemoveFirstThread(PFILA2 pFila);
+
 FILA2 *initQueue();
 
 void initSchedulerQueues();
@@ -29,10 +33,6 @@ void killThread();
 TCB_t *findReadyThreadByTID(int tid);
 
 int waitForThread(int tid);
-
-int insertOrderedFila2(PFILA2 pFila, TCB_t *content);
-
-TCB_t *getAndRemoveFirstThread(PFILA2 pFila);
 
 #endif
 
