@@ -100,6 +100,14 @@ void runThread(TCB_t *thread) //Executa uam thread e inicia o contador de tempo 
     setcontext(&(thread->context));
 }
 
+TCB_t *getRunningThread() //Retorna o TCB da thread que está em execução
+{
+    if (FirstFila2(runningQueue) != 0)
+        return NULL;
+
+    return GetAtIteratorFila2(runningQueue);
+}
+
 int scheduleNewThread() //Retira a primeira thread da fila de aptos e a inicia
 {
     TCB_t *thread = getAndRemoveFirstThread(readyQueue);
@@ -229,9 +237,7 @@ TCB_t *findReadyThreadByTID(int tid) //Busca uma thread através da sua ID
 int waitForThread(int tid) //Coloca a thread atual na fila de bloqueados até que a thread filha seja encerrada
 {
     // Busca a thread em execução
-    if (FirstFila2(runningQueue) != 0)
-        return -1;
-    TCB_t *thread = (TCB_t *)GetAtIteratorFila2(runningQueue);
+    TCB_t *thread = (TCB_t *)getRunningThread();
 
     // Verifica se a thread a ser bloqueada existe e se a thread cujo tid existe
     if (thread == NULL || findReadyThreadByTID(tid) == NULL)

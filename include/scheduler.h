@@ -22,6 +22,8 @@ int insertReadyQueue(TCB_t *thread);
 
 void runThread(TCB_t *thread);
 
+TCB_t *getRunningThread();
+
 int scheduleNewThread();
 
 int blockThread();
