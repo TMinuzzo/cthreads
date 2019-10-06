@@ -30,9 +30,9 @@ TCB_t *findReadyThreadByTID(int tid);
 
 int waitForThread(int tid);
 
-int insertOrderedFila2(PFILA2 pFila, s_TCB *content);
+int insertOrderedFila2(PFILA2 pFila, TCB_t *content);
 
-s_TCB *getAndRemoveFirstThread(PFILA2 pFila);
+TCB_t *getAndRemoveFirstThread(PFILA2 pFila);
 
 #endif
 
