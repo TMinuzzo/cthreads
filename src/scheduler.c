@@ -15,6 +15,8 @@ FILA2 *joinQueue;
 TCB_t *mainThreadTCB;
 ucontext_t mainThreadContext;
 
+int schedulerInitialized = 0;
+
 FILA2 *initQueue() //Inicializa uma fila
 {
     PFILA2 queue = (PFILA2)malloc(sizeof(FILA2));
@@ -278,4 +280,14 @@ int waitForThread(int tid) //Coloca a thread atual na fila de bloqueados até qu
 
     blockThread();
     return 0;
+}
+
+void initializeScheduler()
+{
+    if (schedulerInitialized)
+        return;
+
+    schedulerInitialized = 1;
+    initMainThread();
+    return;
 }

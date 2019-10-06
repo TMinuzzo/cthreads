@@ -17,8 +17,6 @@
 ucontext_t dispatcherContext;
 char dispatcherStack[SIGSTKSZ];
 
-int schedulerInitialized = 0;
-
 /*
  * Creates a new thread
  * Parametes:
@@ -46,14 +44,10 @@ int ccreate(void *(*start)(void *), void *arg, int prio)
 	newThread = createThread(newContext, prio);
 
 	int status = insertReadyQueue(newThread);
-	if(status < 0) 
-	{
+	if(status < 0)
 		return -1;
-	}
 	else
-	{
 		return newThread->tid;
-	}
 }
 
 /*
@@ -66,9 +60,8 @@ int ccreate(void *(*start)(void *), void *arg, int prio)
 int cyield(void)
 {
 	initializeScheduler();
-	// TODO: idenfity which thread is running (EXECUTANDO) and release it, sending to APTO state
-	// TODO: call scheduler to choose the new thread to go to EXECUTANDO
-	return -9;
+
+	return yield();
 }
 
 /*
@@ -163,13 +156,4 @@ int cidentify(char *name, int size)
 {
 	strncpy(name, "Gabriel Lando - 00291399\nLeonardo Lauryel - XXXXXXXX\nThayná Minuzzo - 00262525", size);
 	return 0;
-}
-
-void initializeScheduler()
-{
-	if(schedulerInitialized) return;
-	
-	schedulerInitialized = 1;
-	initMainThread();
-	return;
 }

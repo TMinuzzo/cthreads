@@ -34,6 +34,8 @@ TCB_t *findReadyThreadByTID(int tid);
 
 int waitForThread(int tid);
 
+void initializeScheduler();
+
 #endif
 
 
