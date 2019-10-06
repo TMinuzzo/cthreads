@@ -18,6 +18,7 @@ TCB_t* createThread(ucontext_t context, int priority)
         .prio = priority,
         .context = context
     };
-    return thread;
     tid++;
+    return thread;
+
 }

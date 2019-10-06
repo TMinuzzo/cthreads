@@ -1,5 +1,4 @@
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <ucontext.h>
@@ -18,6 +17,8 @@
 ucontext_t dispatcherContext;
 char dispatcherStack[SIGSTKSZ];
 
+int schedulerInitialized = 0;
+
 /*
  * Creates a new thread
  * Parametes:
@@ -30,6 +31,7 @@ char dispatcherStack[SIGSTKSZ];
 */
 int ccreate(void *(*start)(void *), void *arg, int prio)
 {
+	initializeScheduler();
 	ucontext_t newContext;
 	getcontext(&newContext);
 
@@ -63,6 +65,7 @@ int ccreate(void *(*start)(void *), void *arg, int prio)
 */
 int cyield(void)
 {
+	initializeScheduler();
 	// TODO: idenfity which thread is running (EXECUTANDO) and release it, sending to APTO state
 	// TODO: call scheduler to choose the new thread to go to EXECUTANDO
 	return -9;
@@ -77,6 +80,18 @@ int cyield(void)
 */
 int cjoin(int tid)
 {
+	initializeScheduler();
+	debugLog("\nJoin(): esperando thread  com id: %d\n", tid);
+	
+	TCB_t* thread = getRunningThread();
+
+	if(thread == NULL) return -1;
+
+	// Necessário também adicionar uma verificação para caso a thread cujo tid não exista!
+	// Verificar se a thread bloqueante está bloqueando outra thread no momento.
+
+	
+
 	// TODO: identify which thread is running (EXECUTANDO) and send it BLOQUEADO
 	// TODO: use the tid to identify which thread should wait to finish execution
 	// should return when identified that the thread finished
@@ -95,6 +110,7 @@ int cjoin(int tid)
 */
 int csem_init(csem_t *sem, int count)
 {
+	initializeScheduler();
 	// TODO: initialize csem_t before using it's value in cwait and csignal
 	// TODO: csem_t receives as a second parameter a queue with all the blocked threads
 	return -9;
@@ -111,6 +127,7 @@ int csem_init(csem_t *sem, int count)
 */
 int cwait(csem_t *sem)
 {
+	initializeScheduler();
 	// TODO: verify if the requested resource is free.
 	// 		 YES: assigns the resource to the running thread
 	//		 NO: blocks the running thread, and send it to a queue that waits for the resource (semaphore queue)
@@ -128,6 +145,7 @@ int cwait(csem_t *sem)
 */
 int csignal(csem_t *sem)
 {
+	initializeScheduler();
 	// TODO:
 	// TODO: increment the csem_t count variable: (sem->count)++
 	return -9;
@@ -145,4 +163,13 @@ int cidentify(char *name, int size)
 {
 	strncpy(name, "Gabriel Lando - 00291399\nLeonardo Lauryel - XXXXXXXX\nThayná Minuzzo - 00262525", size);
 	return 0;
+}
+
+void initializeScheduler()
+{
+	if(schedulerInitialized) return;
+	
+	schedulerInitialized = 1;
+	initMainThread();
+	return;
 }
