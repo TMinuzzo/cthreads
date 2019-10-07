@@ -10,8 +10,6 @@
 
 FILA2 *initQueue();
 
-ucontext_t *getDispatcherContext();
-
 int insertOrderedFila2(PFILA2 pFila, TCB_t *content);
 
 TCB_t *getAndRemoveFirstThread(PFILA2 pFila);

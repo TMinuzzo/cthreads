@@ -3,21 +3,21 @@
  *	Programa de teste da biblioteca cthread
  *
  *	Esse programa cria NUM_THREADS threads:
- *		- Após a craição das threads, uma mensagem é exibida
+ *		- Apos a craicao das threads, uma mensagem eh exibida
  *		no console informando que as threads foram criadas.
  *		- A Main cede voluntariamente a CPU e vai para o fim
  *		da fila de aptos (cyield).
  *		- Cada thread imprime a sua ID e termina.
- *		- Novamente, uma mensagem é exibida informando que a
+ *		- Novamente, uma mensagem eh exibida informando que a
  *		thread da Main voltou a ser executada.
  *
- * 	Novamente, são criadas NUM_THREADS threads:
- * 		- Após a craição das threads, uma mensagem é exibida
+ * 	Novamente, sao criadas NUM_THREADS threads:
+ * 		- Apos a craicao das threads, uma mensagem eh exibida
  *		no console informando que as threads foram criadas.
- *		- A Main chama a função cjoin() para aguardar a
- *		execução de cada uma das threads.
+ *		- A Main chama a funcao cjoin() para aguardar a
+ *		execucao de cada uma das threads.
  *		- Cada thread imprime a sua ID e termina.
- *		- Novamente, uma mensagem é exibida informando que a
+ *		- Novamente, uma mensagem eh exibida informando que a
  *		thread da Main voltou a ser executada.
  *
  */

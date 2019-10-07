@@ -14,6 +14,8 @@
 	OBS: Todas as funções devem testar no começo se a chamada
 	vem da main() - vide Seção 4 da definição do trabalho
 */
+ucontext_t dispatcherContext;
+char dispatcherStack[SIGSTKSZ];
 
 /*
  * Creates a new thread
@@ -28,16 +30,12 @@
 int ccreate(void *(*start)(void *), void *arg, int prio)
 {
 	initializeScheduler();
-	ucontext_t newContext;
-	getcontext(&newContext);
 
-	newContext.uc_link = getDispatcherContext();
-	newContext.uc_stack.ss_sp = malloc(SIGSTKSZ);
-	newContext.uc_stack.ss_size = SIGSTKSZ;
+	// Criação do contexto
+	ucontext_t *newContext = malloc(sizeof(ucontext_t));
+	createContext(newContext, start, arg);
 
-	makecontext(&newContext, (void (*)(void))start, 1, arg);
-
-	TCB_t *newThread = createThread(newContext, prio);
+	TCB_t *newThread = createThread(*newContext, prio);
 
 	int status = insertReadyQueue(newThread);
 	if(status < 0)
@@ -56,7 +54,7 @@ int ccreate(void *(*start)(void *), void *arg, int prio)
 int cyield(void)
 {
 	initializeScheduler();
-	
+
 	return yield();
 }
 
@@ -113,14 +111,15 @@ int cwait(csem_t *sem)
 	initializeScheduler();
 
 	// Verifica se o semáforo existe e foi inicializado
-	if(sem == NULL || sem->fila == NULL)
+	if (sem == NULL || sem->fila == NULL)
 		return -1;
 
 	(sem->count)--;
 
-	if (sem->count < 0){
+	if (sem->count < 0)
+	{
 		//Busca a thread em execução e verifica se ela existe
-		TCB_t *thread = getRunningThread(); 
+		TCB_t *thread = getRunningThread();
 		if (thread == NULL)
 			return -1;
 
@@ -142,7 +141,6 @@ int cwait(csem_t *sem)
 int csignal(csem_t *sem)
 {
 	initializeScheduler();
-	
 
 	// Verifica se o semáforo existe e foi inicializado
 	if (sem == NULL || sem->fila == NULL)

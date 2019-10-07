@@ -24,7 +24,3 @@ multiThreads: multiThreads.c $(LIB_DIR)/libcthread.a
 	
 clean:
 	rm -rf exemplo mandel teste_vetor series multiThreads *.o *~
-
-
-
-

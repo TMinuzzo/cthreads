@@ -11,19 +11,12 @@ ucontext_t mainThreadContext;
 
 int schedulerInitialized = 0;
 
-ucontext_t dispatcherContext;
-
 FILA2 *initQueue() //Inicializa uma fila
 {
     PFILA2 queue = (PFILA2)malloc(sizeof(FILA2));
     CreateFila2(queue);
 
     return queue;
-}
-
-ucontext_t* getDispatcherContext() 
-{
-    return &dispatcherContext;
 }
 
 int insertOrderedFila2(PFILA2 pFila, TCB_t *content) //Insere elementos de forma ordenada na fila (usado para a fila de Aptos)
@@ -80,7 +73,6 @@ int initMainThread() //Cria um contexto para a função Main e adiciona ela na f
     initSchedulerQueues();
 
     getcontext(&mainThreadContext);
-
 
     mainThreadTCB = createThread(mainThreadContext, 0);
 
@@ -281,11 +273,4 @@ void initializeScheduler()
 
     schedulerInitialized = 1;
     initMainThread();
-
-    getcontext(&dispatcherContext);
-    dispatcherContext.uc_link = 0;
-    dispatcherContext.uc_stack.ss_sp = malloc(SIGSTKSZ);
-    dispatcherContext.uc_stack.ss_size = SIGSTKSZ;
-    makecontext(&dispatcherContext, (void (*)(void))killThread, 0);
-    return;
 }
