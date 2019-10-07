@@ -5,7 +5,7 @@
 CC=gcc
 LIB_DIR=../lib
 
-all: exemplo mandel teste_vetor series
+all: exemplo mandel teste_vetor series multiThreads
 
 exemplo: exemplo.c $(LIB_DIR)/libcthread.a
 	$(CC) -o exemplo exemplo.c -L$(LIB_DIR) -lcthread -Wall
@@ -18,9 +18,12 @@ mandel: mandel.c $(LIB_DIR)/libcthread.a
 
 series: series.c $(LIB_DIR)/libcthread.a
 	$(CC) -o series series.c -L$(LIB_DIR) -lcthread -lm -Wall
+
+multiThreads: multiThreads.c $(LIB_DIR)/libcthread.a
+	$(CC) -o multiThreads multiThreads.c -L$(LIB_DIR) -lcthread -Wall
 	
 clean:
-	rm -rf exemplo mandel teste_vetor series *.o *~
+	rm -rf exemplo mandel teste_vetor series multiThreads *.o *~
 
 
 

@@ -2,7 +2,7 @@
 /*
  *	Programa de exemplo de uso da biblioteca cthread
  *
- *	Vers�o 1.0 - 14/04/2016
+ *	Versão 1.0 - 14/04/2016
  *
  *	Sistemas Operacionais I - www.inf.ufrgs.br
  *
@@ -12,12 +12,14 @@
 #include "../include/cthread.h"
 #include <stdio.h>
 
-void* func0(void *arg) {
+void *func0(void *arg) {
 	printf("Eu sou a thread ID0 imprimindo %d\n", *((int *)arg));
+	return NULL;
 }
 
-void* func1(void *arg) {
+void *func1(void *arg) {
 	printf("Eu sou a thread ID1 imprimindo %d\n", *((int *)arg));
+	return NULL;
 }
 
 int main(int argc, char *argv[]) {
@@ -34,5 +36,6 @@ int main(int argc, char *argv[]) {
 	cjoin(id1);
 
 	printf("Eu sou a main voltando para terminar o programa\n");
-}
 
+	return 0;
+}

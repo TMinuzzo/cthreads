@@ -1,6 +1,6 @@
 #include "../include/thread.h"
 
-int tid = 1;
+int tid = 0;
 
 TCB_t* createThread(ucontext_t context, int priority)
 {

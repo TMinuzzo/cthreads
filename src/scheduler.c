@@ -12,7 +12,6 @@ ucontext_t mainThreadContext;
 int schedulerInitialized = 0;
 
 ucontext_t dispatcherContext;
-char dispatcherStack[SIGSTKSZ];
 
 FILA2 *initQueue() //Inicializa uma fila
 {
@@ -285,8 +284,8 @@ void initializeScheduler()
 
     getcontext(&dispatcherContext);
     dispatcherContext.uc_link = 0;
-    dispatcherContext.uc_stack.ss_sp = dispatcherStack;
+    dispatcherContext.uc_stack.ss_sp = malloc(SIGSTKSZ);
     dispatcherContext.uc_stack.ss_size = SIGSTKSZ;
-    makecontext(&dispatcherContext, (void (*)(void)) killThread, 0);
+    makecontext(&dispatcherContext, (void (*)(void))killThread, 0);
     return;
 }

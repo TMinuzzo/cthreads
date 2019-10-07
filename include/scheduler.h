@@ -8,11 +8,13 @@
 #include "cdata.h"
 #include "thread.h"
 
+FILA2 *initQueue();
+
+ucontext_t *getDispatcherContext();
+
 int insertOrderedFila2(PFILA2 pFila, TCB_t *content);
 
 TCB_t *getAndRemoveFirstThread(PFILA2 pFila);
-
-FILA2 *initQueue();
 
 void initSchedulerQueues();
 
@@ -41,5 +43,3 @@ int waitForThread(int tid);
 void initializeScheduler();
 
 #endif
-
-
