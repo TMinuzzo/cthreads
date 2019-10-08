@@ -5,7 +5,7 @@
 CC=gcc
 LIB_DIR=../lib
 
-all: exemplo mandel teste_vetor series multiThreads filosofos barbeiro
+all: exemplo mandel teste_vetor series multiThreads filosofos barbeiro schedulerTest
 
 exemplo: exemplo.c $(LIB_DIR)/libcthread.a
 	$(CC) -m32 -o exemplo exemplo.c -L$(LIB_DIR) -lcthread -Wall
@@ -28,5 +28,8 @@ filosofos: filosofos.c $(LIB_DIR)/libcthread.a
 barbeiro: barbeiro.c $(LIB_DIR)/libcthread.a
 	$(CC) -m32 -o barbeiro barbeiro.c -L$(LIB_DIR) -lcthread -Wall
 
+schedulerTest: schedulerTest.c $(LIB_DIR)/libcthread.a
+	$(CC) -m32 -o schedulerTest schedulerTest.c -L$(LIB_DIR) -lcthread -Wall
+
 clean:
-	rm -rf exemplo mandel teste_vetor series multiThreads filosofos barbeiro *.o *~
+	rm -rf exemplo mandel teste_vetor series multiThreads filosofos barbeiro schedulerTest *.o *~
