@@ -21,13 +21,13 @@ all: scheduler cthread thread
 	ar crs $(LIB_DIR)/libcthread.a $(BIN_DIR)/scheduler.o $(BIN_DIR)/lib.o $(BIN_DIR)/support.o $(BIN_DIR)/thread.o
 
 scheduler:
-	$(CC) -m32 -c $(SRC_DIR)/scheduler.c -o $(BIN_DIR)/scheduler.o -Wall
+	$(CC) -c $(SRC_DIR)/scheduler.c -o $(BIN_DIR)/scheduler.o -Wall
 
 cthread:
-	$(CC) -m32 -c $(SRC_DIR)/lib.c -o $(BIN_DIR)/lib.o -Wall
+	$(CC) -c $(SRC_DIR)/lib.c -o $(BIN_DIR)/lib.o -Wall
 
 thread:
-	$(CC) -m32 -c $(SRC_DIR)/thread.c -o $(BIN_DIR)/thread.o -Wall
+	$(CC) -c $(SRC_DIR)/thread.c -o $(BIN_DIR)/thread.o -Wall
 
 clean:
 	rm -rf $(LIB_DIR)/*.a $(BIN_DIR)/scheduler.o $(BIN_DIR)/thread.o $(BIN_DIR)/lib.o $(SRC_DIR)/*~ $(INC_DIR)/*~ *~
