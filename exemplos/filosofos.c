@@ -1,16 +1,16 @@
 //
-// Philosophers.c: Este programa implementa um dos classicos de programa√ß√£o
-//                 concorrente: a janta dos fil√≥sofos.
-//                 O objetivo deste programa √© testar a implementa√ß√£o do
+// Philosophers.c: Este programa implementa um dos classicos de programaÁ„o
+//                 concorrente: a janta dos filÛsofos.
+//                 O objetivo deste programa È testar a implementaÁ„o do
 //                 micro kernel desenvolvido na disciplina INF01142
 //
 // Primitivas testadas: ccreate, cjoin, cyield, cwait e csignal.
 //
-// Este programa √© basedo na solu√ß√£o de Tanenbaum apresentada no livro
+// Este programa È basedo na soluÁ„o de Tanenbaum apresentada no livro
 // "Modern Operating System" (Prentice Hall International).
 //
 // Disclamer: este programa foi desenvolvido para auxiliar no desenvolvimento
-//            de testes para o micron√∫cleo. N√ÉO H√Å garantias de estar correto.
+//            de testes para o micron˙cleo. N√O H¡ garantias de estar correto.
 
 
 #include <stdio.h>
@@ -112,7 +112,7 @@ void *Philosophers(void *arg) {
 
 	*(status+2*i)='D';
 	state[i] = DONE;
-	return;
+	return NULL;
 }
 
 
@@ -120,7 +120,7 @@ void *Philosophers(void *arg) {
 
 int	main(int argc, char *argv[]) {
 	int 	ThreadId[N];
-	int	i,ret;
+	int	i;
 
         srand((unsigned)time(NULL));
 
@@ -139,7 +139,9 @@ int	main(int argc, char *argv[]) {
         printf("#\n# The dinner will begin...\n");
 
 	for(i = 0; i < N; i++)
-	   ret = cjoin(ThreadId[i]);
+	   cjoin(ThreadId[i]);
 
         printf("\n# Diner ends... All philosophers goes to sleep...\n\n\n");
+
+	return 0;
 }
