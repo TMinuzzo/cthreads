@@ -11,13 +11,6 @@
 #include "../include/thread.h"
 
 /*
-	OBS: Todas as funções devem testar no começo se a chamada
-	vem da main() - vide Seção 4 da definição do trabalho
-*/
-ucontext_t dispatcherContext;
-char dispatcherStack[SIGSTKSZ];
-
-/*
  * Creates a new thread
  * Parametes:
  * 	start: pointer to functwdaion the thread will run

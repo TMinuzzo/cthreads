@@ -11,6 +11,20 @@ ucontext_t mainThreadContext;
 
 int schedulerInitialized = 0;
 
+struct timeval startTime;
+
+void my_startTimer() // Nossa função para iniciar o Timer, pois a função da support.h estava retornando valores estranhos na primeira execução
+{
+    gettimeofday(&startTime, NULL);
+}
+
+unsigned int my_stopTimer() // Nossa função para encerrar o Timer, pois a função da support.h estava retornando valores estranhos na primeira execução
+{
+    struct timeval currentTime;
+    gettimeofday(&currentTime, NULL);
+    return (currentTime.tv_sec * (int)1e6 + currentTime.tv_usec) - (startTime.tv_sec * (int)1e6 + startTime.tv_usec);
+}
+
 FILA2 *initQueue() //Inicializa uma fila
 {
     PFILA2 queue = (PFILA2)malloc(sizeof(FILA2));
@@ -78,7 +92,7 @@ int initMainThread() //Cria um contexto para a função Main e adiciona ela na f
 
     if (mainThreadTCB != NULL)
     {
-        startTimer(); //Inicia o contador no momento que o contexto é criado para a main
+        my_startTimer(); //Inicia o contador no momento que o contexto é criado para a main
         mainThreadTCB->state = PROCST_EXEC;
         AppendFila2(runningQueue, mainThreadTCB);
         return 0;
@@ -95,7 +109,7 @@ int insertReadyQueue(TCB_t *thread) //Insere uma thread na fila de aptos
 
 void runThread(TCB_t *thread) //Executa uam thread e inicia o contador de tempo da sua execução
 {
-    startTimer();
+    my_startTimer();
     thread->state = PROCST_EXEC;
     AppendFila2(runningQueue, thread);
     setcontext(&(thread->context));
@@ -136,7 +150,7 @@ int blockThread() //Interrompe a thread atual e salva o seu tempo de execução 
     {
         hasBeenBlocked = 1;
         thread->state = PROCST_BLOQ;
-        thread->prio = (int)stopTimer();
+        thread->prio = (int)my_stopTimer();
         AppendFila2(blockedQueue, thread); //Adiciona a fila de bloqueados
         scheduleNewThread();               //Chama o escalonador para executar outra thread
     }
@@ -159,7 +173,7 @@ int yield() //Interrupção voluntária da thread atual, é salvo o seu tempo de
     if (hasYielded == 0)
     {
         hasYielded = 1;
-        thread->prio = (int)stopTimer();
+        thread->prio = (int)my_stopTimer();
         insertReadyQueue(thread); //Adiciona a fila de Aptos (liberação voluntária)
         scheduleNewThread();      //Chama o escalonador para executar outra thread
     }
@@ -191,7 +205,6 @@ int unlockThread(int tid) //Uma thread bloqueada volta para a fila de Aptos
 
 void killThread() //Remove a thread atual e, caso haja alguma thread aguardando ela, essa thread volta para a fila de aptos
 {
-    stopTimer();
     // Identifica a thread que está em execução e remove ele da fila "executando"
     TCB_t *thread = getAndRemoveFirstThread(runningQueue);
 
